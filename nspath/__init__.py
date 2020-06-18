@@ -23,22 +23,6 @@ HVSINE = math.cos(math.radians(NVS_LAT))
 
 DEG_RADIUS = math.radians(6371)
 
-ALLOWED_ROADS = [
-    'motorway',
-    'trunk',
-    'primary',
-    'secondary',
-    'tertiary',
-    'unclassified',
-    'residential',
-    'motorway_link',
-    'trunk_link',
-    'primary_link',
-    'secondary_link',
-    'tertiary_link',
-    'living_street'
-]
-
 SPEEDS = {
     'motorway' : 10,
     'trunk' : 10,
@@ -47,6 +31,7 @@ SPEEDS = {
     'tertiary' : 8,
     'unclassified' : 7,
     'residential' : 6,
+    'service': 6,
     'motorway_link' : 9,
     'trunk_link' : 8,
     'primary_link' : 7,
@@ -54,6 +39,8 @@ SPEEDS = {
     'tertiary_link' : 5,
     'living_street' : 4
 }
+
+ALLOWED_ROADS = list(SPEEDS.keys())
 
 nodes = set()
 link_count = 0
@@ -64,19 +51,27 @@ node_dict = {}
 
 important_ways = []
 
+typs = {}
+
 def draw_path(plt, path, *args, **kwargs):
     plt.plot([p.lon for p in path], [p.lat for p in path], *args, **kwargs)
 
-def draw_dumb_map(plt):
+def draw_dumb_map(plt, *args, **kwargs):
     for w in important_ways:
-        draw_path(plt, [node_dict[n] for n in w.nodes], lw=SPEEDS[w.tags['highway']] / 10.0, c='gray')
+        draw_path(plt, [node_dict[n] for n in w.nodes], lw=1, c='gray', *args, **kwargs)
 
 def load():
     num_links = 0
     for entity in parse_file('novi_sad.osm.pbf'):
         if isinstance(entity, Node):
             node_dict[entity.id] = entity
-        elif isinstance(entity, Way) and 'highway' in entity.tags and entity.tags['highway'] in ALLOWED_ROADS:
+        elif isinstance(entity, Way) and 'highway' in entity.tags: # and entity.tags['highway'] in ALLOWED_ROADS:
+            highway_type = entity.tags['highway']
+            typs[highway_type] = typs.get(highway_type, 0) + 1
+            if highway_type not in ALLOWED_ROADS:
+                continue
+            if 'access' in entity.tags and entity.tags['access'] != 'yes':
+                continue
             important_ways.append(entity)
             nodes.update(set(entity.nodes))
             for i, cur in enumerate(entity.nodes[1:]):
@@ -85,6 +80,9 @@ def load():
                 if 'oneway' not in entity.tags or entity.tags['oneway'] == 'no':
                     node_neighbors[cur].append((prev, entity))
                 num_links += 1
+
+    for k, i in sorted(typs.items(), key=lambda x: -x[1]):
+        print(i, k)
 
     print('nodes:', len(nodes))
     print('links:', num_links)
@@ -132,7 +130,7 @@ def pathfind(start, target, use_speed=False):
         item: WNode = heapq.heappop(q)
         counted += 1
 
-        print(f' search: {counted} | {item.distance * DEG_RADIUS} | {item.distance / item.weight * 100:4.1f}%', end='\r')
+        print(f' search ({"fast" if use_speed else "short"}): {counted} | {item.distance * DEG_RADIUS} | {item.distance / item.weight * 100:4.1f}%', end='\r')
 
         visited.add(item.node.id)
 
