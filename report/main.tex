@@ -88,7 +88,7 @@ Pošto su udaljenosti male, koristi se jednostavna formula za rastojanja, koja r
 \[
     d (a, b) = \sqrt{ ( H ( a_{lon} - b_{lon} ) ) ^ 2 + ( a_{lat} - b_{lat} ) ^ 2 }
 \]
-gde je $H$ konstanta čija vrednost zavisi od geografske širine. Za Novi Sad ona iznosi $ \cos 45.2551338 = 0.13402739523 $. Generalno se računa kao kosinus srednje geografske širine za tačke koje se posmatraju. \footnote{Rezultujuća vrednost e u stepenima kružnog luka. Kako bi se dobila stvarna udaljenost na površini, potrebno je sve distance pomnožiti sa $\frac{R \pi}{180}$, gde je $R$ poluprečnik Zemlje.}
+gde je $H$ konstanta čija vrednost zavisi od geografske širine. Za Novi Sad ona iznosi $ \cos 45.2551338 = 0.70395156165 $. Generalno se računa kao kosinus srednje geografske širine za tačke koje se posmatraju. \footnote{Rezultujuća vrednost e u stepenima kružnog luka. Kako bi se dobila stvarna udaljenost na površini, potrebno je sve distance pomnožiti sa $\frac{R \pi}{180}$, gde je $R$ poluprečnik Zemlje.}
 
 Nakon računanja distance svih suseda, ukoliko je čvor već ubačen u red opsluživanja, njegov prioritet se podešava ukoliko je povoljniji od trenutnog (relaksacija), i red se ponovo \emph{heapify}-uje. Ukoliko nije već ubačen, samo se ubacuje u red.
 
