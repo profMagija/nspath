@@ -32,19 +32,7 @@ def _pika_point(preselected=[]):
 def distfn(x1, y1):
     return lambda n: (n.lon - x1) ** 2 + (n.lat - y1) ** 2
 
-while True:
-
-    x1, y1 = _pika_point()
-    start = min([node_dict[n] for n in nodes], key=distfn(x1, y1))
-
-    x2, y2 = _pika_point([start])
-    target = min([node_dict[n] for n in nodes], key=distfn(x2, y2))
-
-    start = start.id
-    target = target.id
-
-    # start = int(input(f'start [{start}]: ') or start)
-    # target = int(input(f'target [{target}]: ') or target)
+def drawem(start, target):
     res, dist = pathfind(start, target)
     print()
     res2, _ = pathfind(start, target, True)
@@ -60,27 +48,65 @@ while True:
     draw_path(plt, res2)
     plt.show()
 
-# nds = list(nodes)
-# max_percent = 0
-# while True:
-#     start = random.choice(nds)
-#     target = random.choice(nds)
-#     res, dist = pathfind(start, target, False)
-#     print()
 
-#     if res is None:
-#         continue
+def manual_mode():
+    x1, y1 = _pika_point()
+    start = min([node_dict[n] for n in nodes], key=distfn(x1, y1))
 
-#     res2, _ = pathfind (start, target, True)
-#     print()
+    x2, y2 = _pika_point([start])
+    target = min([node_dict[n] for n in nodes], key=distfn(x2, y2))
 
-#     dist2 = sum(map(lambda x: distance(x[0], x[1]), zip(res2[1:], res2[:-1])))
+    start = start.id
+    target = target.id
 
-#     dist *= DEG_RADIUS * 1000
-#     dist2 *= DEG_RADIUS * 1000
+    # start = int(input(f'start [{start}]: ') or start)
+    # target = int(input(f'target [{target}]: ') or target)
+    drawem(start, target)
+
+a_best = None
+
+def auto_search():
+    global a_best
+    nds = list(nodes)
+    max_percent = 0
+    while True:
+        start = random.choice(nds)
+        target = random.choice(nds)
+        res, dist = pathfind(start, target, False)
+        print()
+
+        if res is None:
+            continue
+
+        res2, _ = pathfind (start, target, True)
+        print()
+
+        dist2 = sum(map(lambda x: distance(x[0], x[1]), zip(res2[1:], res2[:-1])))
+
+        dist *= DEG_RADIUS * 1000
+        dist2 *= DEG_RADIUS * 1000
 
 
-#     percent = 2 * (dist2 - dist) / (dist2 + dist)
-#     if percent > max_percent:
-#         print(f'{start} -> {target} {dist:.2f} {dist2:.2f} {dist2 - dist:.2f} {percent:.2f}%')
-#         max_percent = percent
+        percent = 2 * (dist2 - dist) / (dist2 + dist)
+        if percent > max_percent:
+            print(f'{start} -> {target} {dist:.2f} {dist2:.2f} {dist2 - dist:.2f} {percent:.2f}%')
+            a_best = start, target
+            max_percent = percent
+
+def mainest():
+    mode = input("[m]anual or [a]uto?")[0].lower()
+
+    if mode == 'm':
+        try:
+            manual_mode()
+        except:
+            pass
+
+    elif mode == 'a':
+        try:
+            auto_search()
+        except:
+            drawem(*a_best)
+
+while True:
+    mainest()
